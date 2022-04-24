@@ -1,0 +1,30 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: ort-ci-gitlab
+Source: https://github.com/janderssonse/ort-ci-gitlab
+
+Files: *.yml 
+Copyright: 2022 Josef Andersson
+License: CC0-1.0
+
+Files: *.md 
+Copyright: 2022 Josef Andersson
+License: CC0-1.0
+
+Files: *.js
+Copyright: 2022 Josef Andersson
+License: CC0-1.0
+
+Files: *.adoc
+Copyright: 2022 Josef Andersson
+License: CC0-1.0
+
+Files: .gitignore 
+Copyright: 2022 Josef Andersson
+License: CC0-1.0
+
+Files: templates/.ort-scan-template.yml
+Copyright: 2020-2022 HERE Europe B.V
+Copyright: 2022 Josef Andersson
+License: Apache-2.0
+
+

@@ -1,0 +1,165 @@
+---
+variables:
+  IMAGE_REGISTRY_URI:
+    value: ""
+    description: |
+      URI to registry to push images to.
+
+  IMAGE_REGISTRY_USER:
+    value: ""
+    description: |
+      Image registry registry user.
+
+  IMAGE_REGISTRY_PASS:
+    value: ""
+    description: |
+      Image registry user password.
+
+  REGISTRY_MIRROR:
+    value: ""
+    description: |
+      Image registry mirror.
+
+  ORT_BASE_IMAGE:
+    value: $IMAGE_REGISTRY_URI/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME-base:$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA
+    description: |
+      Target image for the ORT base image build.
+
+  ORT_CI_IMAGE:
+    value: $IMAGE_REGISTRY_URI/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA
+    description: |
+      Target for the ORT CI Image. The CI Image is an addon to the ORT base image containing extra tools for CI.
+
+  ORT_REPO_URI:
+    value: https://github.com/oss-review-toolkit/ort.git
+    description: |
+      URI to the ORT repository. This is the ORT main project.
+
+  ORT_CI_BASE_REPO_URI:
+    value: https://github.com/janderssonse/ort-ci-base.git
+    description: |
+      URI to the ort-ci-base repository. This contains scripts and files for building CI actions around ort.
+
+  ORT_COMMIT_SHA:
+    value: "bf42cee7ecfc0a73ceb21fb66cf1055f1fc9732a"
+    description: |
+      Set this to the COMMIT_SHA in the main ORT project from where you want to clone.
+      If empty, it will use the latest commit.
+
+stages:
+  - clone-ort
+  - build-ort-base-image
+  - promote-ort-base-image
+  - clone-ort-ci-base
+  - build-ort-ci-image
+  - promote-ort-ci-image
+
+clone-ort:
+  stage: clone-ort
+  image: alpine
+  variables:
+    GIT_STRATEGY: none
+  tags:
+    - k8s
+  script:
+    - apk update && apk upgrade && apk add --no-cache bash git openssh
+    - mkdir ort
+    - cd ort
+    - git init
+    - git remote add origin $ORT_REPO_URI
+    - git fetch --depth 1 origin $ORT_COMMIT_SHA
+    - git checkout FETCH_HEAD
+  rules:
+    - if: "$CI_COMMIT_BRANCH"
+      when: manual
+  artifacts:
+    paths:
+      - ort/
+
+build-ort-base-image:
+  stage: build-ort-base-image
+  needs: ["clone-ort"]
+  image:
+    name: gcr.io/kaniko-project/executor:v1.8.0-debug
+    entrypoint: [""]
+  variables:
+    GIT_STRATEGY: none
+  tags:
+    - k8s
+  script:
+    - echo "{\"auths\":{\"$IMAGE_REGISTRY_URI\":{\"username\":\"$IMAGE_REGISTRY_USER\",\"password\":\"$IMAGE_REGISTRY_PASS\"}}}" > /kaniko/.docker/config.json
+    - >
+      /kaniko/executor
+      --snapshotMode=redo
+      --use-new-run
+      --context $CI_PROJECT_DIR/ort
+      --destination $ORT_BASE_IMAGE
+      --registry-mirror=${REGISTRY_MIRROR}
+
+promote-ort-base-image:
+  stage: promote-ort-base-image
+  needs: ["build-ort-base-image"]
+  image:
+    name: gcr.io/go-containerregistry/crane:debug
+    entrypoint: [""]
+  variables:
+    GIT_STRATEGY: none
+  tags:
+    - k8s
+  script:
+    - echo "$IMAGE_REGISTRY_PASS" | crane auth login -u "$IMAGE_REGISTRY_USER" --password-stdin "$IMAGE_REGISTRY_URI"
+    - crane tag $ORT_BASE_IMAGE latest
+
+clone-ort-ci-base:
+  stage: clone-ort-ci-base
+  needs: ["promote-ort-base-image"]
+  image: alpine
+  variables:
+    GIT_STRATEGY: none
+  tags:
+    - k8s
+  script:
+    - apk update && apk upgrade && apk add --no-cache bash git openssh
+    - mkdir ort-ci-base
+    - cd ort-ci-base
+    - git init
+    - git remote add origin $ORT_CI_BASE_REPO_URI
+    - git fetch --depth 1 origin
+    - git checkout FETCH_HEAD
+  artifacts:
+    paths:
+      - ort-ci-base/
+
+build-ort-ci-image:
+  stage: build-ort-ci-image
+  needs: ["clone-ort-ci-base"]
+  image:
+    name: gcr.io/kaniko-project/executor:v1.8.0-debug
+    entrypoint: [""]
+  tags:
+    - k8s
+  script:
+    - echo "{\"auths\":{\"$IMAGE_REGISTRY_URI\":{\"username\":\"$IMAGE_REGISTRY_USER\",\"password\":\"$IMAGE_REGISTRY_PASS\"}}}" > /kaniko/.docker/config.json
+    - >
+      /kaniko/executor
+      --snapshotMode=redo
+      --use-new-run
+      --build-arg "ORT_DOCKER_IMAGE=$IMAGE_REGISTRY_URI/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME-base:latest"
+      --context $CI_PROJECT_DIR
+      --dockerfile "ort-ci-base/docker/Dockerfile.ci"
+      --destination $ORT_CI_IMAGE
+      --registry-mirror=${REGISTRY_MIRROR}
+
+promote-ort-ci-image:
+  stage: promote-ort-ci-image
+  needs: ["build-ort-ci-image"]
+  image:
+    name: gcr.io/go-containerregistry/crane:debug
+    entrypoint: [""]
+  variables:
+    GIT_STRATEGY: none
+  tags:
+    - k8s
+  script:
+    - echo "$IMAGE_REGISTRY_PASS" | crane auth login -u "$IMAGE_REGISTRY_USER" --password-stdin "$IMAGE_REGISTRY_URI"
+    - crane tag $ORT_CI_IMAGE latest
