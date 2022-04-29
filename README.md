@@ -39,7 +39,6 @@ stages:
 ```
 This should analyse the project and generate report artifacts in various formats.
 
-
 For further configuration options, see [the variables configuration doc](https://github.com/janderssonse/ort-ci-base/blob/main/docs/variables.adoc) or [ci-templates/.ort-scan-template.yml](ci-templates/.ort-scan-template.yml), or check Run Pipeline to get an overview.
 
 Run Pipeline Example Overview:  
