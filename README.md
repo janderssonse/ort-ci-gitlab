@@ -19,10 +19,9 @@ NOTE: TESTING THINGS; GIT HISTORY WILL BE RESET WHEN PROJECT IS "good enough" fo
 
 ## Usage
 
-* First, you need to have a pre built image using ORT and ORT CI Extensions image.
-You can find an example of building and promoting with Kubernetes/Kaniko/Crane under [ci-templates/imagebuild/.ort-kaniko-template.yml].
-
-* Then, make sure you set a general/repo/hardcoded/whatyouwant GitLab variable $ORT_CI_DOCKER_IMAGE to point to the correct Image.
+*Needs:*
+- A pre built ORT CI Extensions image.(See [Extension Templates](#extension-templates)) for examples)
+- A set GitLab Variable $ORT_CI_DOCKER_IMAGE pointing to above image.
 
 After that, you can test in a repo:
 
@@ -40,19 +39,27 @@ stages:
 ```
 This should analyse the project and generate report artifacts in various formats.
 
-For further configuration options, see [ci-templates/.ort-scan-template.yml](ci-templates/.ort-scan-template.yml), or check Run Pipeline to get an overview.
+
+For further configuration options, see [the variables configuration doc](https://github.com/janderssonse/ort-ci-base/blob/main/docs/variables.adoc) or [ci-templates/.ort-scan-template.yml](ci-templates/.ort-scan-template.yml), or check Run Pipeline to get an overview.
 
 Run Pipeline Example Overview:  
 <img src="https://user-images.githubusercontent.com/37870813/165504825-397424a9-0799-4fcf-ab8d-56e48c1fc6ca.png" width="700" height="454">
 
-There are plenty of configurations, but they should all have descriptions, and will be described here to, in the future.
-
-
 ### Where can the results be found?
 
-To the right of the finised Pipelines summary page, there is a dedicated section for artifacts. Here's a screenshot of something you might see:
+To the right of the finished Pipelines summary page, there is a dedicated section for artifacts. Here's a screenshot of something you might see:
 
 <img src="https://user-images.githubusercontent.com/37870813/165504185-959f2c80-b646-4093-9ed5-be9b8a5f87b3.png" width="700" height="114">
+
+### Extension templates
+
+#### Build and promote a image with kaniko and crane on k8s
+
+To-Do: Describe ci-templates/imagebuild/.ort-kaniko-build-template.yml
+
+#### Posting a CycloneDXBom to [DependencyTrack](https://dependencytrack.org/)
+
+To-Do: Describe ci-templates/integration/.post-bom-to-dependencytrack.yml
 
 ## Development
 
