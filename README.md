@@ -19,7 +19,7 @@ NOTE: TESTING THINGS; GIT HISTORY WILL BE RESET WHEN PROJECT IS "good enough" fo
 
 ## Usage
 
-*Needs:*
+*Prerequistes:*
 - A pre built ORT CI Extensions image.(See [Extension Templates](#extension-templates)) for examples)
 - A set GitLab Variable $ORT_CI_DOCKER_IMAGE pointing to above image.
 
@@ -37,9 +37,10 @@ stages:
   - ort-scan
   - another stage...
 ```
+
 This should analyse the project and generate report artifacts in various formats.
 
-For further configuration options, see [the variables configuration doc](https://github.com/janderssonse/ort-ci-base/blob/main/docs/variables.adoc) or [ci-templates/.ort-scan-template.yml](ci-templates/.ort-scan-template.yml), or check Run Pipeline to get an overview.
+For further configuration options see [the variables configuration doc](https://github.com/janderssonse/ort-ci-base/blob/main/docs/variables.adoc) or [ci-templates/.ort-scan-template.yml](ci-templates/.ort-scan-template.yml), or check Run Pipeline to get an overview.
 
 Run Pipeline Example Overview:  
 <img src="https://user-images.githubusercontent.com/37870813/165504825-397424a9-0799-4fcf-ab8d-56e48c1fc6ca.png" width="700" height="454">
@@ -52,13 +53,79 @@ To the right of the finished Pipelines summary page, there is a dedicated sectio
 
 ### Extension templates
 
+There are a few example templates included, use and/or modify to your needs.
+
+- ci-templates/imagebuild/.ort-kaniko-build-template.yml - A basic Kaniko/Crane build example
+- ci-templates/integration/.ort-post-bom-to-dependencytrack.yml - A basic example of posting a CycloneDX BoM to DependencyTrack.
+
+If you have written extensions that are general and modular, or have improvements for existing ones please submit them and they might be included too.
+
 #### Build and promote a image with kaniko and crane on k8s
 
-To-Do: Describe ci-templates/imagebuild/.ort-kaniko-build-template.yml
+*Prerequistes:*
+- Environment variable:
+  - IMAGE_REGISTRY_URI - URI to registry to push the image to.
+  - IMAGE_REGISTRY_USER - Image registry user.
+  - IMAGE_REGISTRY_PASS - Image registry user password.
+  - ORT_CI_BASE_REPO_URI - URI to the ort-ci-base repo (containing the docker/Dockerfile.ci).
 
-#### Posting a CycloneDXBom to [DependencyTrack](https://dependencytrack.org/)
+Example usage:
 
-To-Do: Describe ci-templates/integration/.post-bom-to-dependencytrack.yml
+```yaml
+
+include: 
+  - project: 'https://github.com/janderssonse/ort-ci-gitlab'
+    file: '/ci-templates/imagebuild/.ort-kaniko-build-template.yml'
+
+variables:
+  IMAGE_REGISTRY_URI:
+    value: $YOUR_REGISTER_URI
+    description: |
+      URI to registry to push the image to.
+
+  IMAGE_REGISTRY_USER:
+    value: $YOUR_REGISTRY_USER
+    description: |
+      Image registry user.
+
+  IMAGE_REGISTRY_PASS:
+    value: $YOUR_REGISTRY_USER_PASS
+    description: |
+      Image registry user password.
+  
+  ORT_CI_BASE_REPO_URI:
+    value: https://github.com/janderssonse/ort-ci-base.git
+    description: |
+      URI to the ort-ci-base repo (containing the docker/Dockerfile.ci).
+
+```
+
+
+
+#### Post a CycloneDXBom to [DependencyTrack](https://dependencytrack.org/)
+
+*Prerequistes:*
+
+- Environment variable: 
+  - DEPENDENCY_TRACK_API_KEY - KEY to the Dependency-Track API with CREATE_PROJECT_UPLOAD permission. Hint, see the default automation team).
+  - DEPENDENCY_TRACK_API_URL - URL to the Dependency-Track API. i.e https://mydependencytrack.instance.org/api/v1.
+
+Example usage:
+
+```yaml
+include: 
+  - project: 'namespace/ort-ci-gitlab'
+    file: '/ci-templates/.ort-scan-template.yml'
+  - project: 'namespace/ort-ci-gitlab'
+    file: '/ci-templates/integration/.post-bom-to-dependencytrack.yml'
+
+
+stages:
+  - a stage...
+  - ort-scan
+  - upload-bom
+  - another stage...
+```
 
 ## Development
 
