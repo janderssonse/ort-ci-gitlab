@@ -23,27 +23,27 @@ variables:
     description: |
       Set to 'true' only if dynamic dependency versions are allowed (note version ranges specified for dependencies may cause unstable results).
       Applies only to package managers that support lock files, e.g. NPM.
-  
+
   ORT_CONFIG_FILE:
     value: ""
     description: |
       Path to repository configuration file relative to the VCS root.
       Defaults to '.ort.yml'.
-  
+
   ORT_CLI_CONFIG_TMPL:
-    value: "ort.conf.tmpl" 
+    value: "ort.conf.tmpl"
     description: |
       Path to a general ORT configuration file.
       Defaults to the the ort-ci-base repository (/templates/ort.conf.tmpl).
 
   ORT_CONFIG_REPO_URL:
-    value: "" 
+    value: ""
     description: |
       Url to a git repo containing configuration.
       Defaults to 'https://github.com/oss-review-toolkit/ort-config.git'.
 
   ORT_CONFIG_REVISION:
-    value: "" 
+    value: ""
     description: |
       The Git revision of the ORT_CONFIG_REPO_URL repository to use.
 
@@ -80,7 +80,7 @@ variables:
       'debug' to see additional debug output to help tracking down errors.
       'performance' for less logs.
       'info' as default.
-  
+
   ORT_OPTS:
     value: ""
     description: |
@@ -90,7 +90,7 @@ variables:
     value: https://github.com/oss-review-toolkit/ort.git
     description: |
       The ORT repository.
-  
+
   ORT_USE_DEV_DB:
     value: ""
     description: |

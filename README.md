@@ -106,9 +106,9 @@ variables:
 
 *Prerequistes:*
 
-- Environment variable: 
+- Environment variable:
   - DEPENDENCY_TRACK_API_KEY - KEY to the Dependency-Track API with CREATE_PROJECT_UPLOAD permission. Hint, see the default automation team).
-  - DEPENDENCY_TRACK_API_URL - URL to the Dependency-Track API. i.e https://mydependencytrack.instance.org/api/v1.
+  - DEPENDENCY_TRACK_API_URL - URL to the Dependency-Track API. i.e mydependencytrack.instance.org/api/v1.
 
 Example usage:
 
